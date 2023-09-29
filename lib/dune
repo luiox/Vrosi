@@ -1,0 +1,3 @@
+(library
+ (name vrosi_lib)
+ (libraries util))
