@@ -1,4 +1,4 @@
 (executable
  (public_name vrosi)
  (name vrosi)
- (libraries util))
+ (libraries vrosi_lib))

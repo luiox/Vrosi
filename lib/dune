@@ -1,3 +1,2 @@
 (library
- (name vrosi_lib)
- (libraries util))
+ (name vrosi_lib))
