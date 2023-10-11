@@ -59,6 +59,16 @@ let print_usage =
    print_endline "Unknown!";
    print_endline "Usage: Vrosi [f/d] [files/directories]"
 
+let rec traverse_directory path =
+  let files = Sys.readdir path in
+    Array.iter (fun file ->
+      let full_path = Filename.concat path file in
+      if Sys.is_directory full_path then
+        traverse_directory full_path
+      else
+        print_endline full_path
+  ) files   
+
 let process_command_line_args args =
     match Array.length args with
     | n when n < 3 -> print_usage
@@ -81,7 +91,9 @@ let process_command_line_args args =
                     printf "\n")
               filenames
          end
-      | "d" ->()
+      | "d" ->
+          let directories = Array.sub args 2 (Array.length args - 2) in
+            Array.iter traverse_directory directories
       | _ -> ()
 
 let () =
