@@ -1,5 +1,6 @@
 open Printf
 
+
 let count_lines filename =
     let ic = open_in filename in
     let rec count_lines_helper count empty_count comment_count in_comment =
@@ -56,47 +57,49 @@ let count_lines filename =
         count_lines_helper 0 0 0 false
 
 let print_usage =
-   print_endline "Unknown!";
-   print_endline "Usage: Vrosi [f/d] [files/directories]"
+    print_endline "Unknown!";
+    print_endline "Usage: Vrosi [f/d] [files/directories]"
 
-let rec traverse_directory path =
-  let files = Sys.readdir path in
-    Array.iter (fun file ->
-      let full_path = Filename.concat path file in
-      if Sys.is_directory full_path then
-        traverse_directory full_path
-      else
-        print_endline full_path
-  ) files   
+let print_file_info filename =
+    let filepath = Printf.sprintf "%s" filename in
+    let name, lines, empty_lines, comment_lines = count_lines filepath in
+        printf "File: %s\n" name;
+        printf "Code Lines: %d\n" lines;
+        printf "Empty Lines: %d\n" empty_lines;
+        printf "Comment Lines: %d\n" comment_lines;
+        printf "\n"
 
+let rec traverse_directory path handler =
+    let files = Sys.readdir path in
+        Array.iter
+          (fun file ->
+            let full_path = Filename.concat path file in
+                if Sys.is_directory full_path then
+                  traverse_directory full_path handler
+                else
+                  handler full_path
+            (* print_endline full_path *))
+          files
+
+(* handle command line agruments *)
+(* arccording to different options, choose different way to handle. *)
 let process_command_line_args args =
     match Array.length args with
     | n when n < 3 -> print_usage
-    | _ ->
-      let option = args.(1) in
-      match option with
-      | "f" ->
-        begin
-        let filenames = Array.sub args 2 (Array.length args - 2) in
-            Array.iter
-              (fun filename ->
-                let filepath = Printf.sprintf "%s" filename in
-                let name, lines, empty_lines, comment_lines =
-                    count_lines filepath
-                in
-                    printf "File: %s\n" name;
-                    printf "Code Lines: %d\n" lines;
-                    printf "Empty Lines: %d\n" empty_lines;
-                    printf "Comment Lines: %d\n" comment_lines;
-                    printf "\n")
-              filenames
-         end
-      | "d" ->
-          let directories = Array.sub args 2 (Array.length args - 2) in
-            Array.iter traverse_directory directories
-      | _ -> ()
+    | _ -> (
+        let option = args.(1) in
+            match option with
+            | "f" ->
+                let filenames = Array.sub args 2 (Array.length args - 2) in
+                    Array.iter print_file_info filenames
+            | "d" ->
+                let directories = Array.sub args 2 (Array.length args - 2) in
+                    Array.iter
+                      (fun directory ->
+                        traverse_directory directory print_file_info)
+                      directories
+            | _ -> print_usage)
 
 let () =
     let args = Sys.argv in
         process_command_line_args args
-
