@@ -56,11 +56,13 @@ let count_lines filename =
     in
         count_lines_helper 0 0 0 false
 
+(* print usage *)
 let print_usage =
     print_endline "Unknown!";
     print_endline "Usage: Vrosi [f/d] [files/directories]"
 
-let print_file_info filename =
+(* print a file info *)
+let count_and_print_file_info filename =
     let filepath = Printf.sprintf "%s" filename in
     let name, lines, empty_lines, comment_lines = count_lines filepath in
         printf "File: %s\n" name;
@@ -69,6 +71,7 @@ let print_file_info filename =
         printf "Comment Lines: %d\n" comment_lines;
         printf "\n"
 
+(* recursively traverse a directory and apply a handler to each file. *)
 let rec traverse_directory path handler =
     let files = Sys.readdir path in
         Array.iter
@@ -78,7 +81,7 @@ let rec traverse_directory path handler =
                   traverse_directory full_path handler
                 else
                   handler full_path
-            (* print_endline full_path *))
+          )
           files
 
 (* handle command line agruments *)
@@ -91,15 +94,16 @@ let process_command_line_args args =
             match option with
             | "f" ->
                 let filenames = Array.sub args 2 (Array.length args - 2) in
-                    Array.iter print_file_info filenames
+                    Array.iter count_and_print_file_info filenames
             | "d" ->
                 let directories = Array.sub args 2 (Array.length args - 2) in
                     Array.iter
                       (fun directory ->
-                        traverse_directory directory print_file_info)
+                        traverse_directory directory count_and_print_file_info)
                       directories
             | _ -> print_usage)
 
+(* entry point *)
 let () =
     let args = Sys.argv in
         process_command_line_args args
