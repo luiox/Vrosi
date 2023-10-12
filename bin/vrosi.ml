@@ -1,15 +1,52 @@
 open Printf
 
+let contains_substring str substring =
+  let substring_length = String.length substring in
+  let rec loop i =
+    if i + substring_length > String.length str then
+      false
+    else if String.sub str i substring_length = substring then
+      true
+    else
+      loop (i + 1)
+  in
+  loop 0
 
 let count_lines filename =
+  let ic = open_in filename in
+  let rec count_lines_helper count empty_count comment_count in_comment =
+      try
+        let line = input_line ic in
+        let trimmed_line = String.trim line in
+          if contains_substring trimmed_line "//" ||
+            (contains_substring trimmed_line "/*" &&
+            contains_substring trimmed_line "*/") then
+            count_lines_helper count empty_count (comment_count+1) in_comment
+          else if in_comment then
+            if contains_substring trimmed_line "*/" then
+              count_lines_helper count empty_count (comment_count+1) false
+            else
+              count_lines_helper (count + 1) empty_count comment_count in_comment
+          else if contains_substring trimmed_line "/*" then
+            count_lines_helper count empty_count (comment_count+1) true
+          else if String.length trimmed_line = 0 then
+            count_lines_helper count (empty_count+1) comment_count in_comment
+          else
+            count_lines_helper (count+1) empty_count comment_count in_comment
+      with End_of_file ->
+        close_in ic;
+        (filename, count, empty_count, comment_count)
+  in
+      count_lines_helper 0 0 0 false
+
+(* let count_lines filename =
     let ic = open_in filename in
     let rec count_lines_helper count empty_count comment_count in_comment =
         try
           let line = input_line ic in
           let trimmed_line = String.trim line in
               if String.length trimmed_line = 0 then
-                count_lines_helper count (empty_count + 1) comment_count
-                  in_comment
+                count_lines_helper count (empty_count + 1) comment_count in_comment
               else if in_comment then
                 let end_comment_index =
                     try String.index trimmed_line '*' with Not_found -> -1
@@ -54,7 +91,7 @@ let count_lines filename =
           close_in ic;
           (filename, count, empty_count, comment_count)
     in
-        count_lines_helper 0 0 0 false
+        count_lines_helper 0 0 0 false *)
 
 (* print usage *)
 let print_usage =
@@ -64,9 +101,9 @@ let print_usage =
 (* print a file info *)
 let count_and_print_file_info filename =
     let filepath = Printf.sprintf "%s" filename in
-    let name, lines, empty_lines, comment_lines = count_lines filepath in
+    let name, code_lines, empty_lines, comment_lines = count_lines filepath in
         printf "File: %s\n" name;
-        printf "Code Lines: %d\n" lines;
+        printf "Code Lines: %d\n" code_lines;
         printf "Empty Lines: %d\n" empty_lines;
         printf "Comment Lines: %d\n" comment_lines;
         printf "\n"
