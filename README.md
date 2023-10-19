@@ -1,12 +1,16 @@
 # Vrosi
 a code counter.
 
-构建
+Implemented statistics on the number of comment lines under empty lines, code lines, and "//" and "/* */".
+
+# Build
+
+build project
 ```shell
 dune build
 ```
 
-格式化代码
+format code
 ```shell
 dune fmt
 ```
